@@ -14,7 +14,7 @@ Reqires a config.sh file that contains the following variables:
   P4USER=p4user
   P4PASSWORD=p4password
   DAYSTOKEEP=5
-  BACKUPSERVER=someaddress.someplace.com
+  BACKUPSERVER="user@someaddress.someplace.com"
   P4VERIFYOUT=/opt/perforce/backup/P4D-Remote-Backup.log
   ERRORRECIPIENT="list@of.email, addresses@someaddress.com"
 ```
