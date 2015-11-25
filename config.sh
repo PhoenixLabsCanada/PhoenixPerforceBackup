@@ -16,6 +16,6 @@ P4HOST=localhost:1666
 P4USER=p4user
 P4PASSWORD=p4password
 DAYSTOKEEP=5
-BACKUPSERVER=backup.sea.phxlabs.net
+BACKUPSERVER="user@someaddress.someplace.com"
 P4VERIFYOUT=/opt/perforce/backup/P4D-Remote-Backup.log
 ERRORRECIPIENT="list@of.email, addresses@someaddress.com"
