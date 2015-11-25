@@ -1,4 +1,4 @@
-# PerforceRsyncBackupScripts
+# Phoenix Perforce Backup
 
 creates a checkpoint and backs up your perforce depots to an offsite location via rsync. 
 
