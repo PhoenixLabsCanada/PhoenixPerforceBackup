@@ -42,14 +42,20 @@ fi
 
 
 ### Create a Checkpoint
-logs "Creating a checkpoint... "
+logs "INFO: Creating a checkpoint... "
 $P4 -p $P4HOST -u $P4USER admin checkpoint -z
 
 ### Move the Checkpoint and Journals to a backup folder
-logs "Removing Backup Data... "
-mv $JOURNALDIR/journal.* $BACKUPDIR
-mv $JOURNALDIR/checkpoint.* $BACKUPDIR
-
+logs "INFO: Moving Backup Data... "
+for f in $JOURNALDIR/journal.*; do
+	mv $JOURNALDIR/journal.* $BACKUPDIR
+	break
+done
+	
+for f in $JOURNALDIR/checkpoint.*; do	
+	mv $JOURNALDIR/checkpoint.* $BACKUPDIR
+	break
+done
 ### Move & compress the Logs to the backup folder
 
 logs "Moving & compress the log file... "
@@ -58,10 +64,14 @@ tar -cvzf $BACKUPDIR/p4d.log.$TODAY.gz $BACKUPDIR/p4d.log
 
 ### Cleanup the old stuff
 
-logs "Cleaning up the old stuff... "
+logs "INFO: Cleaning up the old stuff... "
 
 #### Remove old log file now that we gzip'd
-rm $BACKUPDIR/p4d.log
+if [ -s $BACKUPDIR/p4d.log.$TODAY.gz ]
+	rm $BACKUPDIR/p4d.log
+else
+	logs "WARNING: Something went wrong in the Taring of the Logs"
+fi
 
 #### Clean up old journal checkpoint and p4d.log backups
 find $BACKUPDIR/journal.* -mtime +$DAYSTOKEEP -exec rm -f {} \;
@@ -73,11 +83,11 @@ find $BACKUPDIR/p4d.log.* -mtime +$DAYSTOKEEP -exec rm -f {} \;
 logs "Begining the sync process... "
 
 # Sync full folder tree
-/usr/bin/rsync -arzh --delete --bwlimit=10000 -e ssh /opt/perforce/servers/ $BACKUPSERVER:/opt/perforce/servers/
-/usr/bin/rsync -arzh --delete --bwlimit=10000 -e ssh /opt/perforce/backup/ $BACKUPSERVER:/opt/perforce/backup/
+$RSYNC -arzh --delete --bwlimit=10000 -e ssh $SERVERSDIR $BACKUPSERVER:$SERVERSDIR
+$RSYNC -arzh --delete --bwlimit=10000 -e ssh $BACKUPDIR $BACKUPSERVER:$BACKUPDIR
 
 logs "Copying server P4D configuration data..."
-/usr/bin/rsync -arzh --delete --bwlimit=10000 -e ssh /etc/perforce/ $BACKUPSERVER:/opt/perforce/backup/etc/
+$RSYNC -arzh --delete --bwlimit=10000 -e ssh /etc/perforce/ $BACKUPSERVER:/opt/perforce/backup/etc/
 
 
 logs "Sync Finished! Yay!"

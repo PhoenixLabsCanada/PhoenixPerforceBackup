@@ -9,6 +9,7 @@
 DEPOTDIR=/location/of/your/depot/files/
 METADATADIR=/location/of/your/db/files/
 JOURNALDIR=/location/of/your/journal/file/
+SERVERSDIR=/location/of/your/servers/
 BACKUPDIR=/directory/
 LOGFILE=/where/the/p4d/log/file/lives/p4d.log
 P4=/usr/bin/p4
@@ -19,3 +20,4 @@ DAYSTOKEEP=5
 BACKUPSERVER="user@someaddress.someplace.com"
 P4VERIFYOUT=/opt/perforce/backup/P4D-Remote-Backup.log
 ERRORRECIPIENT="list@of.email, addresses@someaddress.com"
+RSYNC=/usr/bin/rsync
