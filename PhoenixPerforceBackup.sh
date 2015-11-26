@@ -70,7 +70,7 @@ fi
 
 logs "Moving & compress the log file... "
 mv $LOGFILE $BACKUPDIR
-tar -cvzf $BACKUPDIR/p4d.log.$TODAY.gz $BACKUPDIR/p4d.log
+tar -cvzf $BACKUPDIR/p4d.log.$TODAY.gz $BACKUPDIR/p4d.log*
 
 ### Cleanup the old stuff
 
