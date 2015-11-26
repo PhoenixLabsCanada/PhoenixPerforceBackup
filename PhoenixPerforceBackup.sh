@@ -47,13 +47,13 @@ $P4 -p $P4HOST -u $P4USER admin checkpoint -z
 
 ### Move the Checkpoint and Journals to a backup folder
 logs "INFO: Moving Backup Data... "
-for f in $JOURNALDIR/journal.*; do
-	mv $JOURNALDIR/journal.* $BACKUPDIR
+for f in $METADATADIR/journal.*; do
+	mv $METADATADIR/journal.* $BACKUPDIR
 	break
 done
 	
-for f in $JOURNALDIR/checkpoint.*; do	
-	mv $JOURNALDIR/checkpoint.* $BACKUPDIR
+for f in $METADATADIR/checkpoint.*; do	
+	mv $METADATADIR/checkpoint.* $BACKUPDIR
 	break
 done
 ### Move & compress the Logs to the backup folder
