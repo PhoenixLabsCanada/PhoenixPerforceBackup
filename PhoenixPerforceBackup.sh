@@ -6,7 +6,8 @@
 ####################################
 
 # Include a config file to house sensitive data.
-source config.sh
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source $DIR/config.sh
 
 SCRIPTNAME="[PhoenixPerforceBackup]"
 LOGGER=/usr/bin/logger
@@ -22,18 +23,21 @@ date
 
 ### Clean up old P4VERIFYOUT log
 
-rm $P4VERIFYOUT
+if [ -s $P4VERIFYOUT ]; then
+	rm $P4VERIFYOUT
+fi
 
 ### Verify the state of the depot
 ### THE MORE YOU KNOW: Verify checks every file in perforce and save the checksum for next time
 
 logs "$SCRIPTNAME Verifying the depot..."
 
+chmod a+w $BACKUPDIR
 $P4 -p $P4HOST -u $P4USER verify -q //... > $P4VERIFYOUT
 $P4 -p $P4HOST -u $P4USER verify -u -q //... >> $P4VERIFYOUT
 
 #### Check
-if [ -s $P4VERIFYOUT ] then
+if [ -s $P4VERIFYOUT ]; then
         # Holy crap something bad happened - alert the troops and full stop
         logs "ERROR: Verify returned output - halting backup and alerting the troops"
         mailx -s "$SCRIPTNAME - Perforce Verify Output Errors - Backup failed [URGENT]" -t $ERRORRECIPIENT < $P4VERIFYOUT
@@ -47,15 +51,21 @@ $P4 -p $P4HOST -u $P4USER admin checkpoint -z
 
 ### Move the Checkpoint and Journals to a backup folder
 logs "INFO: Moving Backup Data... "
-for f in $METADATADIR/journal.*; do
+
+if ls $METADATADIR/journal.* > /dev/null 2>&1; then
 	mv $METADATADIR/journal.* $BACKUPDIR
-	break
-done
-	
-for f in $METADATADIR/checkpoint.*; do	
-	mv $METADATADIR/checkpoint.* $BACKUPDIR
-	break
-done
+else
+	logs "WARNING: No journal backups present"
+fi
+
+if ls $METADATADIR/checkpoint.* > /dev/null 2>&1; then
+        mv $METADATADIR/checkpoint.* $BACKUPDIR
+else
+        logs "WARNING: No checkpoint backups present"
+fi
+
+
+
 ### Move & compress the Logs to the backup folder
 
 logs "Moving & compress the log file... "
@@ -67,7 +77,7 @@ tar -cvzf $BACKUPDIR/p4d.log.$TODAY.gz $BACKUPDIR/p4d.log
 logs "INFO: Cleaning up the old stuff... "
 
 #### Remove old log file now that we gzip'd
-if [ -s $BACKUPDIR/p4d.log.$TODAY.gz ]
+if [ -s $BACKUPDIR/p4d.log.$TODAY.gz ]; then
 	rm $BACKUPDIR/p4d.log
 else
 	logs "WARNING: Something went wrong in the Taring of the Logs"
@@ -83,11 +93,11 @@ find $BACKUPDIR/p4d.log.* -mtime +$DAYSTOKEEP -exec rm -f {} \;
 logs "Begining the sync process... "
 
 # Sync full folder tree
-$RSYNC -arzh --delete --bwlimit=10000 -e ssh $SERVERSDIR $BACKUPSERVER:$SERVERSDIR
-$RSYNC -arzh --delete --bwlimit=10000 -e ssh $BACKUPDIR $BACKUPSERVER:$BACKUPDIR
+$RSYNC -arzh --delete -e ssh $SERVERSDIR $BACKUPSERVER:$SERVERSDIR
+$RSYNC -arzh --delete -e ssh $BACKUPDIR $BACKUPSERVER:$BACKUPDIR
 
 logs "Copying server P4D configuration data..."
-$RSYNC -arzh --delete --bwlimit=10000 -e ssh /etc/perforce/ $BACKUPSERVER:/opt/perforce/backup/etc/
+$RSYNC -arzh --delete -e ssh /etc/perforce/ $BACKUPSERVER:/opt/perforce/backup/etc/
 
 
 logs "Sync Finished! Yay!"
